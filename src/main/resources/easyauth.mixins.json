@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "su.rico040.easyauth.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ClientboundPlayerInfoUpdatePacketMixin",
+    "CommandsMixin",
+    "PlayerAdvancementsMixin",
+    "PlayerDataStorageMixin",
+    "PlayerListMixin",
+    "ServerGamePacketListenerImplMixin",
+    "ServerLoginPacketListenerImplMixin",
+    "ServerPlayerMixin",
+    "ServerPlayerMixin",
+    "SlotMixin"
+  ],
+  "minVersion": "0.8",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

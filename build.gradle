@@ -19,6 +19,16 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    maven { name "Floodgate Api"; url "https://repo.opencollab.dev/main" }
+    maven {
+        name "NeoPermissions"
+        url "https://maven.pkg.github.com/thinkingstudios/neopermissions"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+    }
+    maven { name "FFAPI"; url "https://maven.su5ed.dev/releases" }
 }
 
 base {
@@ -112,28 +122,78 @@ configurations {
 }
 
 dependencies {
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+    // Permissions
+    jarJar(implementation("org.thinkingstudio:neopermissions:${neopermissions_version}"))
 
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
+    // Mods
+    compileOnly("org.geysermc.floodgate:api:${floodgate_api_version}")
 
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
+    // Password hashing
+    // Argon2
+    jarJar(implementation("de.mkammerer:argon2-jvm:${argon2_version}"))
+    additionalRuntimeClasspath "de.mkammerer:argon2-jvm:${argon2_version}"
+    // jarJar(implementation("de.mkammerer:argon2-jvm-nolibs:${argon2_version}"))
+    // additionalRuntimeClasspath "de.mkammerer:argon2-jvm-nolibs:${argon2_version}"
 
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
+    // BCrypt
+    jarJar(implementation("at.favre.lib:bcrypt:${bcrypt_version}"))
+    additionalRuntimeClasspath "at.favre.lib:bcrypt:${bcrypt_version}"
+    jarJar(implementation("at.favre.lib:bytes:${bytes_version}"))
+    additionalRuntimeClasspath "at.favre.lib:bytes:${bytes_version}"
 
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    // Storage
+    // LevelDB database
+    jarJar(implementation("org.iq80.leveldb:leveldb:${leveldb_version}"))
+    additionalRuntimeClasspath "org.iq80.leveldb:leveldb:${leveldb_version}"
+    jarJar(implementation("org.iq80.leveldb:leveldb-api:${leveldb_version}"))
+    additionalRuntimeClasspath "org.iq80.leveldb:leveldb-api:${leveldb_version}"
+
+    // MongoDB driver
+    implementation(platform("org.mongodb:mongodb-driver-bom:${mongodb_version}"))
+
+    jarJar(implementation("org.mongodb:mongodb-driver-sync:${mongodb_version}"))
+    additionalRuntimeClasspath "org.mongodb:mongodb-driver-sync:${mongodb_version}"
+    jarJar(implementation("org.mongodb:mongodb-driver-core:${mongodb_version}"))
+    additionalRuntimeClasspath "org.mongodb:mongodb-driver-core:${mongodb_version}"
+    jarJar(implementation("org.mongodb:bson:${mongodb_version}"))
+    additionalRuntimeClasspath "org.mongodb:bson:${mongodb_version}"
+
+    // MySQL driver
+    jarJar(implementation("com.mysql:mysql-connector-j:${mysql_version}"))
+    additionalRuntimeClasspath "com.mysql:mysql-connector-j:${mysql_version}"
+
+    // SQLite driver
+    jarJar(implementation("org.xerial:sqlite-jdbc:${sqlite_version}"))
+    additionalRuntimeClasspath "org.xerial:sqlite-jdbc:${sqlite_version}"
+
+    // Hocon config
+    jarJar(implementation("org.spongepowered:configurate-core:${hocon_version}"))
+    additionalRuntimeClasspath "org.spongepowered:configurate-core:${hocon_version}"
+    jarJar(implementation("org.spongepowered:configurate-hocon:${hocon_version}"))
+    additionalRuntimeClasspath "org.spongepowered:configurate-hocon:${hocon_version}"
+    jarJar(implementation("org.apache.commons:commons-text:${commons_text_version}"))
+    additionalRuntimeClasspath "org.apache.commons:commons-text:${commons_text_version}"
+    jarJar(implementation("com.typesafe:config:${typesafe_config_version}"))
+    additionalRuntimeClasspath "com.typesafe:config:${typesafe_config_version}"
+    jarJar(implementation("io.leangen.geantyref:geantyref:${geantyref_version}"))
+    additionalRuntimeClasspath "io.leangen.geantyref:geantyref:${geantyref_version}"
+    jarJar(implementation("net.kyori:option:${option_version}"))
+    additionalRuntimeClasspath "net.kyori:option:${option_version}"
+
+
+    // JNA lib
+    // jarJar(implementation("net.java.dev.jna:jna:${jna_version}"))
+    // additionalRuntimeClasspath "net.java.dev.jna:jna:${jna_version}"
 }
+
+configurations.configureEach {
+    resolutionStrategy {
+        // Force specific versions of problematic dependencies
+        force "net.java.dev.jna:jna:${jna_version}"
+        force "org.apache.commons:commons-lang3:3.17.0"
+    }
+}
+
 
 // This block of code expands all declared replace properties in the specified resource targets.
 // A missing property will result in an error. Properties are expanded using ${} Groovy notation.
@@ -187,3 +247,13 @@ idea {
         downloadJavadoc = true
     }
 }
+
+tasks.register('printDependencies') {
+    doLast {
+        configurations.getByName("jarJar").files.each { file ->
+            println "JAR file: ${file.name}"
+        }
+    }
+}
+
+
