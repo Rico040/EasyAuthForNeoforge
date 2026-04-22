@@ -24,8 +24,8 @@ repositories {
         name "NeoPermissions"
         url "https://maven.pkg.github.com/thinkingstudios/neopermissions"
         credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
         }
     }
     maven { name "FFAPI"; url "https://maven.su5ed.dev/releases" }
