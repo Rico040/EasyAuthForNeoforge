@@ -124,7 +124,7 @@ public class EasyAuth {
 
     @SubscribeEvent
     public static void onUseItem(PlayerInteractEvent.RightClickItem event) {
-        if (AuthEventHandler.onUseItem(event.getEntity()) != InteractionResultHolder.pass(ItemStack.EMPTY)) {
+        if (AuthEventHandler.onUseItem(event.getEntity()).getResult() != InteractionResult.PASS) {
             event.setCanceled(true);
         }
     }
